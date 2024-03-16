@@ -59,13 +59,30 @@ void setup()
 
 void loop()
 {
-  updateSerial();
+  //send_SMS(String(get_BPM()));
   //spo2_sensor();
+
+  //Serial.println(get_BPM());
+}
+
+void send_SMS(String message){
+  mySerial.println("AT"); //Once the handshake test is successful, it will back to OK
+  updateSerial();
+
+  mySerial.println("AT+CMGF=1"); // Configuring TEXT mode
+  updateSerial();
+  mySerial.println("AT+CMGS=\"+639451127639\"");//change ZZ with country code and xxxxxxxxxxx with phone number to sms
+  updateSerial();
+  mySerial.print(message); //text content
+  updateSerial();
+  mySerial.write(26);
+
+  updateSerial();
 }
 
 
 void spo2_sensor(){
-    long irValue = particleSensor.getIR();
+  long irValue = particleSensor.getIR();
 
   if (checkForBeat(irValue) == true)
   {
@@ -100,6 +117,39 @@ void spo2_sensor(){
 
   Serial.println();
 }
+
+
+float get_BPM(){
+    long irValue = particleSensor.getIR();
+
+  if (checkForBeat(irValue) == true)
+  {
+    //We sensed a beat!
+    long delta = millis() - lastBeat;
+    lastBeat = millis();
+
+    beatsPerMinute = 60 / (delta / 1000.0);
+
+    if (beatsPerMinute < 255 && beatsPerMinute > 20)
+    {
+      rates[rateSpot++] = (byte)beatsPerMinute; //Store this reading in the array
+      rateSpot %= RATE_SIZE; //Wrap variable
+
+      //Take average of readings
+      beatAvg = 0;
+      for (byte x = 0 ; x < RATE_SIZE ; x++)
+        beatAvg += rates[x];
+      beatAvg /= RATE_SIZE;
+    }
+  }
+
+  return beatsPerMinute;
+}
+
+boolean finger_present(){
+  
+}
+
 
 void updateSerial()
 {
