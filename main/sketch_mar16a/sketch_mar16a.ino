@@ -68,7 +68,8 @@ void loop()
 
     if (get_BPM() > BPM_NOT_VALID){
       Serial.println(get_BPM());
-      send_SMS(String(get_BPM() + '\n'));
+      String sendThisMessage = ("BPM val: " + String(get_BPM()) + '\n');
+      send_SMS(sendThisMessage);
     }
 
   }else{
